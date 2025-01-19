@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 class ConfirmOTP extends StatefulWidget {
-  const ConfirmOTP({super.key});
+  const ConfirmOTP({Key? key}) : super(key: key);
 
   @override
   State<ConfirmOTP> createState() => _ConfirmOTPState();

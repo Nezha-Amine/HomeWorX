@@ -1,6 +1,8 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:home_service_app/pages/create_account.dart';
 
 class Home extends StatelessWidget {
   const Home({super.key});
@@ -54,8 +56,11 @@ class Home extends StatelessWidget {
                   // "Create New Account" Button
                   ElevatedButton(
                     onPressed: () {
-                      // Navigate to Create Account Page
-                      Navigator.pushNamed(context, '/create_account');
+                      Get.to(
+                        CreateAccount(),
+                        transition: Transition.fadeIn, // Smooth fade transition
+                        duration: Duration(milliseconds: 300),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blueAccent,
@@ -73,6 +78,7 @@ class Home extends StatelessWidget {
                       ),
                     ),
                   ),
+
                   const SizedBox(height: 20),
                   // "Already Have an Account" Button
                   OutlinedButton(

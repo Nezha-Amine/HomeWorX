@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "798788567053",
+    "project_id": "homeworx-19876",
+    "storage_bucket": "homeworx-19876.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:798788567053:android:060d8e227b250121549544",
+        "android_client_info": {
+          "package_name": "com.yourdomain.home_service_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC3fdrCNBDzAbDmwMrXXdGp1EKZQ9a-93w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

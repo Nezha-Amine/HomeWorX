@@ -30,11 +30,18 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  firebase_core: ^3.10.0
+  firebase_auth: ^5.4.0
+  cupertino_icons: ^1.0.8
+  get: ^4.6.6
+  lottie: ^2.2.0
+
+
 
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
+  
 
 dev_dependencies:
   flutter_test:
@@ -64,6 +71,8 @@ flutter:
   #   - images/a_dot_ham.jpeg
   - assets/images/home_works.jpg
   - assets/images/home_workss.jpg
+  - assets/animations/sending_mail_animation.json
+  - assets/animations/successfully_done.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -1,6 +1,8 @@
 // ignore_for_file: prefer_const_constructors, use_super_parameters, library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:home_service_app/pages/home.dart';
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -12,6 +14,7 @@ class Login extends StatefulWidget {
 class _LoginScreenState extends State<Login> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
   bool _rememberMe = false;
   bool _obscureText = true;
 
@@ -32,7 +35,7 @@ class _LoginScreenState extends State<Login> {
                   color: Colors.white,
                   size: 28,
                 ),
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () => Get.offAll(() => Home()),
               ),
 
               const SizedBox(height: 32),

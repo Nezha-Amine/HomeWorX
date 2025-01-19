@@ -1,6 +1,13 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:home_service_app/backend_logic/auth/auth_service.dart';
+import 'package:get/get.dart';
+
+import 'verify_email.dart';
 
 class CreateAccount extends StatelessWidget {
+  final _auth = AuthService();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
@@ -34,11 +41,9 @@ class CreateAccount extends StatelessWidget {
                   color: Colors.white,
                   size: 28,
                 ),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Get.back(), // Replaced Navigator.pop
               ),
-
               const SizedBox(height: 32),
-
               // Title
               const Text(
                 'Where a journey begins',
@@ -48,43 +53,70 @@ class CreateAccount extends StatelessWidget {
                   color: Colors.white,
                 ),
               ),
-
               const SizedBox(height: 48),
-
               // Email Field
               _buildTextField(
                 label: 'Email',
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
               ),
-
               const SizedBox(height: 24),
-
               // Password Field
               _buildTextField(
                 label: 'Password',
                 controller: _passwordController,
                 obscureText: true,
               ),
-
               const SizedBox(height: 24),
-
               // Confirm Password Field
               _buildTextField(
                 label: 'Confirm Password',
                 controller: _confirmPasswordController,
                 obscureText: true,
               ),
-
               const SizedBox(height: 48),
-
               // Create Account Button
               SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/confirm_otp');
+                  onPressed: () async {
+                    if (_passwordController.text !=
+                        _confirmPasswordController.text) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Passwords do not match")),
+                      );
+                      return;
+                    }
+
+                    /*final user = await _auth.createUserWithEmailAndPassword(
+                      _emailController.text,
+                      _passwordController.text,
+                    );
+
+                    if (user == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Failed to create account. Try again."),
+                        ),
+                      );
+                      return;
+                    }
+
+                    await user.sendEmailVerification();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content:
+                            Text("Account created! Please verify your email."),
+                      ),
+                    );*/
+                    log("Email verification sent");
+                    // Navigate to VerifyEmailScreen
+                    Get.to(
+                      VerifyEmailScreen(email: _emailController.text),
+                      transition: Transition.fadeIn,
+                      duration: const Duration(milliseconds: 300),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
