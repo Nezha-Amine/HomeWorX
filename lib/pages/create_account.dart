@@ -89,7 +89,7 @@ class CreateAccount extends StatelessWidget {
                       return;
                     }
 
-                    /*final user = await _auth.createUserWithEmailAndPassword(
+                    final user = await _auth.createUserWithEmailAndPassword(
                       _emailController.text,
                       _passwordController.text,
                     );
@@ -109,7 +109,7 @@ class CreateAccount extends StatelessWidget {
                         content:
                             Text("Account created! Please verify your email."),
                       ),
-                    );*/
+                    );
                     log("Email verification sent");
                     // Navigate to VerifyEmailScreen
                     Get.to(
