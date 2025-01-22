@@ -10,10 +10,12 @@ class AuthService {
       final cred = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
       // Send email verification
+      await Future.delayed(const Duration(seconds: 1));
       await cred.user?.sendEmailVerification();
+
       return cred.user;
     } catch (e) {
-      log("something went wrong");
+      log("Error: $e");
     }
 
     return null;

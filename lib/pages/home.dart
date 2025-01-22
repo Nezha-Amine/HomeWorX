@@ -2,7 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:home_service_app/pages/create_account.dart';
+import 'package:home_service_app/features/authentication/screens/login/login.dart';
+import 'package:home_service_app/features/authentication/screens/signup/create_account.dart';
 
 class Home extends StatelessWidget {
   const Home({super.key});
@@ -23,7 +24,7 @@ class Home extends StatelessWidget {
                   // Add an image here
                   Image(
                     image: AssetImage(
-                        'assets/images/home_workss.jpg'), // Replace with your asset path
+                        'assets/logos/home_workss.jpg'), // Replace with your asset path
                     height: 150, // Adjust height as needed
                   ),
                   SizedBox(height: 20),
@@ -59,7 +60,7 @@ class Home extends StatelessWidget {
                       Get.to(
                         CreateAccount(),
                         transition: Transition.fadeIn, // Smooth fade transition
-                        duration: Duration(milliseconds: 300),
+                        duration: const Duration(milliseconds: 300),
                       );
                     },
                     style: ElevatedButton.styleFrom(
@@ -84,7 +85,7 @@ class Home extends StatelessWidget {
                   OutlinedButton(
                     onPressed: () {
                       // Navigate to Login Page
-                      Navigator.pushNamed(context, '/login');
+                      Get.to(const Login());
                     },
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Color(0xFFD1C4E9)),
