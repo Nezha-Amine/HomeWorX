@@ -39,57 +39,55 @@ class AuthenticationRepository extends GetxController {
     User? user = _auth.currentUser;
     if (user != null) {
       if (user.emailVerified) {
-        // Fetch user data from Firestore
         var userDoc = await FirebaseFirestore.instance
             .collection('Users')
             .doc(user.uid)
             .get();
 
         if (userDoc.exists && userDoc.data()?['role'] != null) {
-          // Check the role and ensure the profile is complete
           String role = userDoc.data()?['role'];
-          if (role == 'client' || role == 'worker') {
-            // Check if the profile is complete
-            bool isProfileComplete = userDoc.data()?['first_name'] != null &&
-                userDoc.data()?['last_name'] != null &&
-                userDoc.data()?['phone'] != null &&
-                userDoc.data()?['address'] != null;
+          bool isProfileComplete = userDoc.data()?['firstName'] != null &&
+              userDoc.data()?['lastName'] != null &&
+              userDoc.data()?['phoneNumber'] != null &&
+              userDoc.data()?['address'] != null;
 
-            if (role == 'worker') {
-              isProfileComplete = isProfileComplete &&
-                  userDoc.data()?['experience'] != null &&
-                  userDoc.data()?['hourly_rate'] != null &&
-                  userDoc.data()?['service'] != null;
-            }
+          if (role == 'worker') {
+            isProfileComplete = isProfileComplete &&
+                userDoc.data()?['experience'] != null &&
+                userDoc.data()?['hourly_rate'] != null &&
+                userDoc.data()?['services'] != null;
+          }
 
-            if (isProfileComplete) {
-              // Redirect based on role
-              if (role == 'client') {
-                Get.offAll(() => const ClientHomePage());
-              } else if (role == 'worker') {
-                Get.offAll(() => const WorkerHomePage());
-              }
-            } else {
-              // Redirect to profile setup page
-              Get.offAll(() =>
-                  const WorkerForm()); // Change to the appropriate setup page
+          if (isProfileComplete) {
+            if (role == 'client') {
+              print('Navigating to: ClientHomePage');
+              Get.offAll(() => const ClientHomePage());
+              return;
+            } else if (role == 'worker') {
+              print('Navigating to: ClientHomePage');
+              Get.offAll(() => const WorkerHomePage());
+              return;
             }
           } else {
-            // Handle case where role is undefined
-            Get.offAll(() => const RoleSelectionPage());
+            Get.offAll(() => const WorkerForm());
+            return;
           }
         } else {
-          // No user data found
           Get.offAll(() => const RoleSelectionPage());
+          return;
         }
       } else {
-        Get.offAll(() => VerifyEmailScreen(email: _auth.currentUser?.email));
+        Get.offAll(() => VerifyEmailScreen(email: user.email));
+        return;
       }
     } else {
       deviceStorage.writeIfNull('IsFirstTime', true);
-      deviceStorage.read('IsFirstTime') != true
-          ? Get.offAll(() => const Home())
-          : Get.offAll(const OnBoardingScreen());
+      if (deviceStorage.read('IsFirstTime') != true) {
+        Get.offAll(() => const Home());
+      } else {
+        Get.offAll(const OnBoardingScreen());
+      }
+      return;
     }
   }
 

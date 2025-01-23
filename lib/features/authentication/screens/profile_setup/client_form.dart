@@ -28,6 +28,16 @@ class _ProfileFormPageState extends State<ClientProfile> {
   final TextEditingController _addressController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    // Automatically set the email from the authenticated user's email
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      _emailController.text = currentUser.email ?? "";
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -120,6 +130,7 @@ class _ProfileFormPageState extends State<ClientProfile> {
                     suffixIcon: const Icon(Icons.email_outlined),
                   ),
                   keyboardType: TextInputType.emailAddress,
+                  readOnly: true, // Make the field non-editable
                 ),
                 const SizedBox(height: 16),
 

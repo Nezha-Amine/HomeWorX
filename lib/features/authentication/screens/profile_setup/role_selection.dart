@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:home_service_app/features/authentication/screens/profile_setup/client_form.dart';
 import 'package:home_service_app/features/authentication/screens/profile_setup/worker_form.dart';
+import 'package:home_service_app/pages/home.dart';
 import 'package:home_service_app/utils/constants/colors.dart';
 
 class RoleSelectionPage extends StatelessWidget {
@@ -13,6 +14,16 @@ class RoleSelectionPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: Colors.black),
+          onPressed: () {
+            Get.offAll(() => const Home()); // Redirect to Home
+          },
+        ),
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),

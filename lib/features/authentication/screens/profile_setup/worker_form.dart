@@ -29,6 +29,13 @@ class _WorkerRegistrationFlowState extends State<WorkerForm> {
   String? _hourlyRate;
 
   @override
+  void initState() {
+    super.initState();
+    final user = FirebaseAuth.instance.currentUser;
+    _emailController.text = user?.email ?? '';
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -97,6 +104,8 @@ class _WorkerRegistrationFlowState extends State<WorkerForm> {
               controller: _emailController,
               label: 'Email Address',
               keyboardType: TextInputType.emailAddress,
+              readOnly: true,
+              // Make the field non-editable
               validator: (value) =>
                   value?.isEmpty ?? true ? 'Please enter your email' : null,
             ),
@@ -147,6 +156,7 @@ class _WorkerRegistrationFlowState extends State<WorkerForm> {
     required String? Function(String?)? validator,
     TextInputType keyboardType = TextInputType.text,
     void Function(String)? onChanged,
+    bool readOnly = false, // Added default value for readOnly
   }) {
     return TextFormField(
       controller: controller,
@@ -154,6 +164,7 @@ class _WorkerRegistrationFlowState extends State<WorkerForm> {
       decoration: InputDecoration(labelText: label),
       validator: validator,
       onChanged: onChanged,
+      readOnly: readOnly,
     );
   }
 
@@ -168,16 +179,17 @@ class _WorkerRegistrationFlowState extends State<WorkerForm> {
       try {
         // Save first name, last name, and other worker details
         await userRef.update({
-          'first_name': _firstNameController.text,
-          'last_name': _lastNameController.text,
-          'phone': _phoneController.text,
+          'firstName': _firstNameController.text,
+          'lastName': _lastNameController.text,
+          'phoneNumber': _phoneController.text,
           'email': _emailController.text,
           'experience': _experienceController.text,
           'address': _addressController.text,
-          'work_type': _selectedWorkType,
+          'services': _selectedWorkType,
           'hourly_rate': _hourlyRate,
           'role': 'worker',
         });
+
         Get.offAll(() => const WorkerHomePage());
       } catch (e) {
         print('Error saving worker data: $e');
