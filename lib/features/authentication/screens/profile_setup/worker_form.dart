@@ -1,5 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:home_service_app/features/authentication/screens/woker_show_form.dart';
+import 'package:get/get.dart';
+import 'package:home_service_app/data/repositories/user/user_repository.dart';
+import 'package:home_service_app/features/authentication/models/user_model.dart';
+import 'package:home_service_app/features/authentication/screens/worker_home_page.dart';
 
 class WorkerForm extends StatefulWidget {
   const WorkerForm({super.key});
@@ -12,14 +17,16 @@ class _WorkerRegistrationFlowState extends State<WorkerForm> {
   int _currentStep = 0;
   final _formKey = GlobalKey<FormState>();
 
-  // Form controllers
-  final TextEditingController _fullNameController = TextEditingController();
+  // Use separate controllers for first and last name
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _workTypeController = TextEditingController();
   final TextEditingController _experienceController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+
   String? _selectedWorkType;
-  String? _selectedCountry;
+  String? _hourlyRate;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +40,7 @@ class _WorkerRegistrationFlowState extends State<WorkerForm> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Become a worker',
+          'Become a Worker',
           style: TextStyle(color: Colors.black, fontSize: 18),
         ),
       ),
@@ -44,89 +51,12 @@ class _WorkerRegistrationFlowState extends State<WorkerForm> {
               : _currentStep == 2
                   ? _buildWorkTypeSelection()
                   : _currentStep == 3
-                      ? _buildCountrySelection()
+                      ? _buildHourlyRateSelection()
                       : _buildSuccessScreen(),
     );
   }
 
-  Widget _buildWelcomeScreen() {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            height: 200,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              image: const DecorationImage(
-                image: NetworkImage('https://example.com/worker-image.jpg'),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'BECOME A WORKER WITH US?',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const Text(
-            'Join Our Workforce Today',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 32),
-          _buildFeatureItem(
-            icon: Icons.trending_up,
-            title: 'Increased Job Opportunities',
-            description:
-                'Access to a wide range of job opportunities flexible working hours',
-          ),
-          const SizedBox(height: 16),
-          _buildFeatureItem(
-            icon: Icons.star,
-            title: 'Enhanced Professional Reputation',
-            description:
-                'Build credibility through user reviews and experience points',
-          ),
-          const SizedBox(height: 16),
-          _buildFeatureItem(
-            icon: Icons.business_center,
-            title: 'Convenient Business Management',
-            description:
-                'Enjoy a hassle-free payment process with secure and direct earnings deposited into your account',
-          ),
-          const Spacer(),
-          ElevatedButton(
-            onPressed: () => setState(() => _currentStep = 1),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.black,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: const Text('Register Now'),
-          ),
-          TextButton(
-            onPressed: () {},
-            child: const Text(
-              'Need Help?',
-              style: TextStyle(color: Colors.grey),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
+  // Step 1: Registration Form (Updated for first name and last name)
   Widget _buildRegistrationForm() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24.0),
@@ -135,13 +65,24 @@ class _WorkerRegistrationFlowState extends State<WorkerForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // First Name Field
             _buildTextField(
-              controller: _fullNameController,
-              label: 'Full Name',
-              validator: (value) =>
-                  value?.isEmpty ?? true ? 'Please enter your full name' : null,
+              controller: _firstNameController,
+              label: 'First Name',
+              validator: (value) => value?.isEmpty ?? true
+                  ? 'Please enter your first name'
+                  : null,
             ),
             const SizedBox(height: 16),
+            // Last Name Field
+            _buildTextField(
+              controller: _lastNameController,
+              label: 'Last Name',
+              validator: (value) =>
+                  value?.isEmpty ?? true ? 'Please enter your last name' : null,
+            ),
+            const SizedBox(height: 16),
+            // Phone Number Field
             _buildTextField(
               controller: _phoneController,
               label: 'Phone Number',
@@ -151,6 +92,7 @@ class _WorkerRegistrationFlowState extends State<WorkerForm> {
                   : null,
             ),
             const SizedBox(height: 16),
+            // Email Address Field
             _buildTextField(
               controller: _emailController,
               label: 'Email Address',
@@ -159,13 +101,22 @@ class _WorkerRegistrationFlowState extends State<WorkerForm> {
                   value?.isEmpty ?? true ? 'Please enter your email' : null,
             ),
             const SizedBox(height: 16),
+            // Experience Field
             _buildTextField(
               controller: _experienceController,
-              label: 'Years of experience',
+              label: 'Years of Experience',
               keyboardType: TextInputType.number,
               validator: (value) => value?.isEmpty ?? true
                   ? 'Please enter your experience'
                   : null,
+            ),
+            const SizedBox(height: 16),
+            // Address Field
+            _buildTextField(
+              controller: _addressController,
+              label: 'Address',
+              validator: (value) =>
+                  value?.isEmpty ?? true ? 'Please enter your address' : null,
             ),
             const SizedBox(height: 32),
             ElevatedButton(
@@ -189,6 +140,52 @@ class _WorkerRegistrationFlowState extends State<WorkerForm> {
     );
   }
 
+  // Helper method for text fields
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required String? Function(String?)? validator,
+    TextInputType keyboardType = TextInputType.text,
+    void Function(String)? onChanged,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(labelText: label),
+      validator: validator,
+      onChanged: onChanged,
+    );
+  }
+
+  // Save worker data to Firestore
+  Future<void> saveWorkerData() async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+
+    if (userId != null) {
+      final userRef =
+          FirebaseFirestore.instance.collection('Users').doc(userId);
+
+      try {
+        // Save first name, last name, and other worker details
+        await userRef.update({
+          'first_name': _firstNameController.text,
+          'last_name': _lastNameController.text,
+          'phone': _phoneController.text,
+          'email': _emailController.text,
+          'experience': _experienceController.text,
+          'address': _addressController.text,
+          'work_type': _selectedWorkType,
+          'hourly_rate': _hourlyRate,
+          'role': 'worker',
+        });
+        Get.offAll(() => const WorkerHomePage());
+      } catch (e) {
+        print('Error saving worker data: $e');
+      }
+    }
+  }
+
+  // Step 2: Work Type Selection
   Widget _buildWorkTypeSelection() {
     final List<Map<String, dynamic>> workTypes = [
       {'icon': Icons.agriculture, 'name': 'Agricultural Worker'},
@@ -203,22 +200,6 @@ class _WorkerRegistrationFlowState extends State<WorkerForm> {
       {'icon': Icons.directions_car, 'name': 'Driver'},
       {'icon': Icons.electrical_services, 'name': 'Electrician'},
       {'icon': Icons.handyman, 'name': 'Handyman'},
-      {'icon': Icons.healing, 'name': 'Healthcare Assistant'},
-      {'icon': Icons.home_repair_service, 'name': 'Home Repair Specialist'},
-      {'icon': Icons.house, 'name': 'Housekeeper'},
-      {'icon': Icons.kitchen, 'name': 'Kitchen Staff'},
-      {'icon': Icons.landscape, 'name': 'Gardener'},
-      {'icon': Icons.local_fire_department, 'name': 'Fire Safety Officer'},
-      {'icon': Icons.local_gas_station, 'name': 'Gas Technician'},
-      {'icon': Icons.local_hospital, 'name': 'Paramedic'},
-      {'icon': Icons.local_shipping, 'name': 'Logistics Worker'},
-      {'icon': Icons.lock, 'name': 'Locksmith'},
-      {'icon': Icons.map, 'name': 'Surveyor'},
-      {'icon': Icons.military_tech, 'name': 'Security Guard'},
-      {'icon': Icons.plumbing, 'name': 'Plumber'},
-      {'icon': Icons.precision_manufacturing, 'name': 'Machinist'},
-      {'icon': Icons.ramen_dining, 'name': 'Catering Staff'},
-      {'icon': Icons.roofing, 'name': 'Roofer'},
     ];
 
     return Padding(
@@ -227,7 +208,7 @@ class _WorkerRegistrationFlowState extends State<WorkerForm> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const Text(
-            'Select work type',
+            'Select Work Type',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -257,156 +238,133 @@ class _WorkerRegistrationFlowState extends State<WorkerForm> {
             onPressed: _selectedWorkType != null
                 ? () {
                     setState(() => _currentStep = 3);
-                    // Redirect to the TargetPage when the button is pressed
                   }
                 : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.black,
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
-            child: const Text('Ok'),
+            child: const Text('Next'),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCountrySelection() {
-    final countries = ['Morocco', 'Africa', 'Europe', 'Asia', 'Usa'];
-
+  // Step 3: Hourly Rate Selection
+  Widget _buildHourlyRateSelection() {
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const Text(
-            'Select Experience Country',
+            'Enter Your Hourly Rate',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 24),
-          Expanded(
-            child: ListView.builder(
-              itemCount: countries.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(countries[index]),
-                  trailing: Radio<String>(
-                    value: countries[index],
-                    groupValue: _selectedCountry,
-                    onChanged: (value) {
-                      setState(() => _selectedCountry = value);
-                    },
-                  ),
-                );
-              },
-            ),
+          _buildTextField(
+            controller: TextEditingController(text: _hourlyRate),
+            label: 'Hourly Rate',
+            keyboardType: TextInputType.number,
+            validator: (value) =>
+                value?.isEmpty ?? true ? 'Please enter your hourly rate' : null,
+            onChanged: (value) => _hourlyRate = value,
           ),
+          const SizedBox(height: 32),
           ElevatedButton(
-            onPressed: _selectedCountry != null
-                ? () => setState(() => _currentStep = 4)
-                : null,
+            onPressed: () {
+              if (_hourlyRate != null) {
+                saveWorkerData();
+                setState(() => _currentStep = 4); // Go to success screen
+              }
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.black,
               padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
-            child: const Text('Ok'),
+            child: const Text('Submit'),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSuccessScreen() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => WorkerInfoPage(
-          fullName: _fullNameController.text,
-          phone: _phoneController.text,
-          email: _emailController.text,
-          experience: _experienceController.text,
-          workType: _selectedWorkType ?? '',
-          country: _selectedCountry ?? '',
-        ),
+  // Welcome Screen
+  Widget _buildWelcomeScreen() {
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'Welcome to the Worker Registration!',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Please fill in the form to become a worker and offer your services.',
+            style: TextStyle(fontSize: 16),
+          ),
+          const SizedBox(height: 32),
+          ElevatedButton(
+            onPressed: () {
+              setState(() => _currentStep = 1); // Move to the first step
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
+            child: const Text('Get Started'),
+          ),
+        ],
       ),
     );
-    return const SizedBox
-        .shrink(); // Optional: Placeholder since this function won't return a UI anymore.
   }
 
-  Widget _buildFeatureItem({
-    required IconData icon,
-    required String title,
-    required String description,
-  }) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.orange.shade50,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, color: Colors.orange),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
+  // Success Screen
+  Widget _buildSuccessScreen() {
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.check_circle_outline,
+              color: Colors.green,
+              size: 100,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Registration Successful!',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
               ),
-              Text(
-                description,
-                style: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 12,
-                ),
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton(
+              onPressed: () {
+                Get.offAll(() => const WorkerHomePage());
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(vertical: 16),
               ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    TextInputType? keyboardType,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      validator: validator,
-      decoration: InputDecoration(
-        labelText: label,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Colors.black),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Colors.red),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Colors.red),
+              child: const Text('Go to Home Page'),
+            ),
+          ],
         ),
       ),
     );

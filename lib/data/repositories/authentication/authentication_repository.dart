@@ -6,10 +6,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:home_service_app/features/authentication/screens/client_home_page.dart';
 import 'package:home_service_app/features/authentication/screens/login/login.dart';
 import 'package:home_service_app/features/authentication/screens/onboarding/onboarding.dart';
 import 'package:home_service_app/features/authentication/screens/profile_setup/role_selection.dart';
+import 'package:home_service_app/features/authentication/screens/profile_setup/worker_form.dart';
 import 'package:home_service_app/features/authentication/screens/signup/verify_email.dart';
+import 'package:home_service_app/features/authentication/screens/worker_home_page.dart';
 import 'package:home_service_app/pages/hello.dart';
 import 'package:home_service_app/pages/home.dart';
 import 'package:home_service_app/utils/exceptions/firebase_auth_exceptions.dart';
@@ -32,7 +35,6 @@ class AuthenticationRepository extends GetxController {
   }
 
   //Function to show Relevant Screen
-  // Function to show Relevant Screen
   screenRedirect() async {
     User? user = _auth.currentUser;
     if (user != null) {
@@ -44,10 +46,40 @@ class AuthenticationRepository extends GetxController {
             .get();
 
         if (userDoc.exists && userDoc.data()?['role'] != null) {
-          // Role is already selected; redirect to main screen
-          Get.offAll(() => const HelloUserScreen());
+          // Check the role and ensure the profile is complete
+          String role = userDoc.data()?['role'];
+          if (role == 'client' || role == 'worker') {
+            // Check if the profile is complete
+            bool isProfileComplete = userDoc.data()?['first_name'] != null &&
+                userDoc.data()?['last_name'] != null &&
+                userDoc.data()?['phone'] != null &&
+                userDoc.data()?['address'] != null;
+
+            if (role == 'worker') {
+              isProfileComplete = isProfileComplete &&
+                  userDoc.data()?['experience'] != null &&
+                  userDoc.data()?['hourly_rate'] != null &&
+                  userDoc.data()?['service'] != null;
+            }
+
+            if (isProfileComplete) {
+              // Redirect based on role
+              if (role == 'client') {
+                Get.offAll(() => const ClientHomePage());
+              } else if (role == 'worker') {
+                Get.offAll(() => const WorkerHomePage());
+              }
+            } else {
+              // Redirect to profile setup page
+              Get.offAll(() =>
+                  const WorkerForm()); // Change to the appropriate setup page
+            }
+          } else {
+            // Handle case where role is undefined
+            Get.offAll(() => const RoleSelectionPage());
+          }
         } else {
-          // No role selected; redirect to role selection page
+          // No user data found
           Get.offAll(() => const RoleSelectionPage());
         }
       } else {
@@ -60,6 +92,7 @@ class AuthenticationRepository extends GetxController {
           : Get.offAll(const OnBoardingScreen());
     }
   }
+
   //[EmailAuthentication] - SingIn
 
   Future<UserCredential> loginWithEmailAndPassword(

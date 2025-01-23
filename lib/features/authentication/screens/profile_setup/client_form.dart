@@ -1,5 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:home_service_app/data/repositories/user/user_repository.dart';
+import 'package:home_service_app/features/authentication/models/user_model.dart';
+import 'package:home_service_app/features/authentication/screens/client_home_page.dart';
 import 'package:home_service_app/features/authentication/screens/client_profile_preview.dart';
 import 'package:home_service_app/utils/constants/colors.dart';
 
@@ -15,8 +20,8 @@ class _ProfileFormPageState extends State<ClientProfile> {
   String? _selectedCountryCode = '+1';
   String? _profileImageUrl;
 
-  final TextEditingController _fullNameController = TextEditingController();
-  final TextEditingController _nicknameController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
@@ -86,14 +91,14 @@ class _ProfileFormPageState extends State<ClientProfile> {
 
                 // Form Fields
                 TextFormField(
-                  controller: _fullNameController,
-                  decoration: _buildInputDecoration('Full Name'),
+                  controller: _firstNameController,
+                  decoration: _buildInputDecoration('First name'),
                 ),
                 const SizedBox(height: 16),
 
                 TextFormField(
-                  controller: _nicknameController,
-                  decoration: _buildInputDecoration('Nickname'),
+                  controller: _lastNameController,
+                  decoration: _buildInputDecoration('Last name'),
                 ),
                 const SizedBox(height: 16),
 
@@ -220,23 +225,43 @@ class _ProfileFormPageState extends State<ClientProfile> {
     }
   }
 
-  void _submitForm() {
+  void _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      // Handle form submission
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ProfilePreviewPage(
-            fullName: _fullNameController.text,
-            nickname: _nicknameController.text,
-            dateOfBirth: _dateController.text,
-            email: _emailController.text,
-            phone: "+212 ${_phoneController.text}",
-            address: _addressController.text,
-            profileImageUrl: _profileImageUrl,
-          ),
-        ),
-      );
+      try {
+        // Show loading indicator
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) =>
+              const Center(child: CircularProgressIndicator()),
+        );
+
+        // Create a UserModel instance
+        UserModel user = UserModel(
+          id: FirebaseAuth.instance.currentUser!.uid,
+          email: _emailController.text,
+          firstName: _firstNameController.text,
+          lastName: _lastNameController.text,
+          phoneNumber: "+212 ${_phoneController.text}",
+          address: _addressController.text,
+          role: "client", // Set role as client
+          profilePictureUrl: _profileImageUrl,
+        );
+
+        // Save the user data to Firestore
+        await UserRepository.instance.saveUserRecord(user);
+
+        // Navigate to ClientHomePage using Get.off()
+        Get.off(() => const ClientHomePage());
+      } catch (e) {
+        // Handle errors
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to save profile: $e")),
+        );
+      } finally {
+        // Dismiss loading indicator
+        Navigator.of(context, rootNavigator: true).pop();
+      }
     }
   }
 }

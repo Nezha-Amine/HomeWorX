@@ -53,12 +53,14 @@ class HandymanService {
   List<String>? projectImages;
   double? averagePricePerHour;
   int? yearsOfExperience;
+  double? hourlyRate; // Add hourlyRate field
 
   HandymanService({
     required this.serviceName,
     this.projectImages,
     this.averagePricePerHour,
     this.yearsOfExperience,
+    this.hourlyRate, // Add hourlyRate to constructor
   });
 
   Map<String, dynamic> toJson() => {
@@ -66,6 +68,7 @@ class HandymanService {
         "projectImages": projectImages,
         "averagePricePerHour": averagePricePerHour,
         "yearsOfExperience": yearsOfExperience,
+        "hourlyRate": hourlyRate, // Include hourlyRate in toJson
       };
 
   factory HandymanService.fromJson(Map<String, dynamic> json) =>
@@ -74,5 +77,6 @@ class HandymanService {
         projectImages: List<String>.from(json["projectImages"] ?? []),
         averagePricePerHour: json["averagePricePerHour"],
         yearsOfExperience: json["yearsOfExperience"],
+        hourlyRate: json["hourlyRate"], // Deserialize hourlyRate
       );
 }

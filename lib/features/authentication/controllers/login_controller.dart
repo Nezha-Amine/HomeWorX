@@ -21,19 +21,18 @@ class LoginController extends GetxController {
 
   Future<void> emailAndPasswordSignIn() async {
     try {
-      //start loading
+      // Start loading
       HFullScreenLoader.openLoadingDialog(
           'Logging you in ....', HImages.docerAnimation);
 
-      //check internet connectivity
-
+      // Check internet connectivity
       final isConnected = await NetworkManager.instance.isConnected();
       if (!isConnected) {
         HFullScreenLoader.stopLoading();
         return;
       }
 
-      //form validation
+      // Form validation
       if (!loginFormKey.currentState!.validate()) {
         HFullScreenLoader.stopLoading();
         return;
@@ -45,16 +44,15 @@ class LoginController extends GetxController {
         localStorage.write('REMEMBER_ME_PASSWORD', password.text.trim());
       }
 
-      //login user with email and pass auth
-
-      final userCredentials = await AuthenticationRepository.instance
+      // Login user with email and password authentication
+      await AuthenticationRepository.instance
           .loginWithEmailAndPassword(email.text.trim(), password.text.trim());
 
-      //remove loader
-      HFullScreenLoader.stopLoading();
+      // Redirect to the appropriate screen
+      await AuthenticationRepository.instance.screenRedirect();
 
-      //redirect
-      AuthenticationRepository.instance.screenRedirect();
+      // Remove loader
+      HFullScreenLoader.stopLoading();
     } catch (e) {
       HFullScreenLoader.stopLoading();
       HLoaders.errorSnackBar(title: 'Oh Snap', message: e.toString());
