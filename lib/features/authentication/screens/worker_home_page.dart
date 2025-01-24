@@ -1,163 +1,205 @@
 import 'package:flutter/material.dart';
 import 'package:home_service_app/data/repositories/authentication/authentication_repository.dart';
+import 'package:home_service_app/data/repositories/user/user_repository.dart';
+import 'package:home_service_app/features/authentication/models/user_model.dart';
+import 'package:home_service_app/features/authentication/screens/chat_page.dart';
 import 'package:home_service_app/features/authentication/screens/login/login.dart';
+import 'package:home_service_app/utils/constants/image_strings.dart';
 
-class WorkerHomePage extends StatelessWidget {
-  const WorkerHomePage({super.key});
+class WorkerHomePage extends StatefulWidget {
+  const WorkerHomePage({Key? key}) : super(key: key);
+
+  @override
+  State<WorkerHomePage> createState() => _WorkerHomePageState();
+}
+
+class _WorkerHomePageState extends State<WorkerHomePage> {
+  int _selectedIndex = 0;
+
+  Future<UserModel?> _fetchAuthenticatedWorkerData() async {
+    try {
+      return await UserRepository.instance.getAuthenticatedUserData();
+    } catch (e) {
+      print("Error fetching authenticated user data: $e");
+      return null;
+    }
+  }
+
+  void _onItemTapped(int index, BuildContext context) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    if (index == 3) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const ChatPage()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.blue,
-        title: Row(
-          children: [
-            const CircleAvatar(
-              backgroundImage:
-                  AssetImage('assets/user.jpg'), // Replace with your asset
-            ),
-            const SizedBox(width: 8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  "Hi ! Daniel Effertz",
-                  style: TextStyle(fontSize: 16, color: Colors.white),
-                ),
-                Text(
-                  "Casablanca, Morocco",
-                  style: TextStyle(fontSize: 12, color: Colors.white70),
-                ),
-              ],
-            ),
-            const Spacer(),
-            const Text(
-              "Off",
-              style: TextStyle(color: Colors.white),
-            ),
-            Switch(
-              value: true,
-              onChanged: (value) {},
-              activeColor: Colors.green,
-            ),
-            const Icon(
-              Icons.notifications,
-              color: Colors.white,
-            ),
-            const SizedBox(width: 8),
-            IconButton(
-              icon: const Icon(Icons.logout, color: Colors.white),
-              onPressed: () async {
-                try {
-                  await AuthenticationRepository.instance
-                      .logout(); // Call the logout method
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            const Login()), // Redirect to login screen
-                    (route) => false,
-                  );
-                } catch (e) {
-                  // Handle logout errors if needed
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Failed to logout: $e')),
-                  );
-                }
-              },
-            ),
-          ],
+        backgroundColor: const Color(0xFF1A386A),
+        title: FutureBuilder<UserModel?>(
+          future: _fetchAuthenticatedWorkerData(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const CircularProgressIndicator(color: Colors.white);
+            } else if (snapshot.hasError) {
+              return const Text(
+                "Failed to load data",
+                style: TextStyle(color: Colors.white),
+              );
+            } else if (snapshot.hasData && snapshot.data != null) {
+              final worker = snapshot.data!;
+              return Row(
+                children: [
+                  CircleAvatar(
+                    backgroundImage: worker.profilePictureUrl != null
+                        ? NetworkImage(worker.profilePictureUrl!)
+                        : const AssetImage(HImages.user) as ImageProvider,
+                  ),
+                  const SizedBox(width: 8),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Hi! ${worker.firstName ?? ''} ${worker.lastName ?? ''}",
+                        style:
+                            const TextStyle(fontSize: 16, color: Colors.white),
+                      ),
+                      Text(
+                        worker.address ?? "Location not set",
+                        style: const TextStyle(
+                            fontSize: 12, color: Colors.white70),
+                      ),
+                    ],
+                  ),
+                  const Spacer(),
+                  const Text("Off", style: TextStyle(color: Colors.white)),
+                  Switch(
+                    value: true,
+                    onChanged: (value) {},
+                    activeColor: Colors.green,
+                  ),
+                  const Icon(Icons.notifications, color: Colors.white),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.logout, color: Colors.white),
+                    onPressed: () async {
+                      try {
+                        await AuthenticationRepository.instance.logout();
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const Login()),
+                          (route) => false,
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Failed to logout: $e')),
+                        );
+                      }
+                    },
+                  ),
+                ],
+              );
+            } else {
+              return const Text(
+                "No data available",
+                style: TextStyle(color: Colors.white),
+              );
+            }
+          },
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Services Section
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Text(
-                  "Services",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  "View all",
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
+      body: FutureBuilder<UserModel?>(
+        future: _fetchAuthenticatedWorkerData(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return const Center(child: Text("Failed to load data"));
+          } else if (snapshot.hasData && snapshot.data != null) {
+            final worker = snapshot.data!;
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Your Services",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildServiceCard("Electricity", Icons.flash_on, Colors.yellow),
-                _buildServiceCard("Plumbing", Icons.plumbing, Colors.blue),
-                _buildServiceCard("Repairing", Icons.build, Colors.red),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // New Requests Section
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Text(
-                  "New Requests",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  "View all",
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
+                  const SizedBox(height: 16),
+                  worker.services != null && worker.services!.isNotEmpty
+                      ? Wrap(
+                          spacing: 8.0,
+                          runSpacing: 8.0,
+                          children: worker.services!
+                              .map((service) => _buildServiceChip(service))
+                              .toList(),
+                        )
+                      : const Text("No services available."),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: const [
+                      Text(
+                        "New Requests",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        "View all",
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _buildRequestCard(),
-          ],
-        ),
+                  const SizedBox(height: 16),
+                  _buildRequestCard(),
+                ],
+              ),
+            );
+          } else {
+            return const Center(child: Text("No data available"));
+          }
+        },
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
+        currentIndex: _selectedIndex,
+        onTap: (index) => _onItemTapped(index, context),
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Bookings'),
           BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_today), label: "Bookings"),
-          BottomNavigationBarItem(icon: Icon(Icons.chat), label: "Chat"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+              icon: Icon(Icons.calendar_today), label: 'Calendar'),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
+        selectedItemColor: const Color(0xFF153A77),
+        unselectedItemColor: Colors.grey,
       ),
     );
   }
 
-  Widget _buildServiceCard(String title, IconData icon, Color color) {
-    return Column(
-      children: [
-        Container(
-          height: 60,
-          width: 60,
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.2),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, color: color, size: 30),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          title,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-        ),
-      ],
+  Widget _buildServiceChip(String service) {
+    return Chip(
+      label: Text(
+        service,
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+      ),
+      backgroundColor: Colors.blue.shade100,
     );
   }
 
@@ -170,15 +212,13 @@ class WorkerHomePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Request Image
             Container(
               height: 150,
               width: double.infinity,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 image: const DecorationImage(
-                  image: AssetImage(
-                      'assets/ac_installation.jpg'), // Replace with your asset
+                  image: AssetImage(HImages.acInstallation),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -206,8 +246,7 @@ class WorkerHomePage extends StatelessWidget {
               children: [
                 const CircleAvatar(
                   radius: 20,
-                  backgroundImage: AssetImage(
-                      'assets/client.jpg'), // Replace with your asset
+                  backgroundImage: AssetImage(HImages.user),
                 ),
                 const SizedBox(width: 8),
                 Column(

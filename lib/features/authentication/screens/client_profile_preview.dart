@@ -105,9 +105,7 @@ class ProfilePreviewPage extends StatelessWidget {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Handle final submission
-                  },
+                  onPressed: () {},
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.deepPurple,
                     shape: RoundedRectangleBorder(

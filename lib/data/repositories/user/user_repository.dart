@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:home_service_app/features/authentication/models/user_model.dart';
 import 'package:home_service_app/utils/exceptions/firebase_exceptions.dart';
 import 'package:home_service_app/utils/exceptions/platform_exceptions.dart';
+import 'package:logger/logger.dart';
 
 class UserRepository extends GetxController {
   static UserRepository get instance => Get.find();
@@ -57,5 +59,33 @@ class UserRepository extends GetxController {
     } catch (e) {
       throw 'Failed to upload profile picture: $e';
     }
+  }
+
+  final Logger _logger = Logger();
+
+  Future<UserModel?> getAuthenticatedUserData() async {
+    final Logger logger = Logger(); // Initialize the logger
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        logger.d('Authenticated user found: ${user.uid}');
+
+        final userData = await getUserData(user.uid);
+        if (userData != null) {
+          logger.i('User data fetched successfully for user ID: ${user.uid}');
+          logger.v('Fetched user data: ${userData.toJson()}');
+          return userData;
+        } else {
+          logger.w('No user data found for user ID: ${user.uid}');
+        }
+      } else {
+        logger.w('No authenticated user found.');
+      }
+    } catch (e, stackTrace) {
+      logger.e('Failed to fetch authenticated user data',
+          error: e, stackTrace: stackTrace);
+      throw 'Failed to fetch authenticated user data: $e';
+    }
+    return null;
   }
 }

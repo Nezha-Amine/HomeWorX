@@ -17,12 +17,11 @@ class App extends StatelessWidget {
       theme: HAppTheme.lightTheme,
       initialBinding: GeneralBindings(),
       debugShowCheckedModeBanner: false,
-      // initialBinding: GeneralBindings(),
       home: FutureBuilder(
         future: AuthenticationRepository.instance.screenRedirect(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            return Container(); // This will be replaced by the navigation in `screenRedirect`
+            return Container(); // Placeholder, as navigation is handled in `screenRedirect`.
           }
           return const Scaffold(
             backgroundColor: HColors.primary,

@@ -39,7 +39,9 @@ class HImages {
       "assets/images/reviews/review_profile_image_3.jpeg";
 
   //Profile
-  static const String user = "assets/images/content/user.png";
+  static const String user = "assets/images/content/default_user_image.png";
 
-  // -- Payment Methods
+  //tasks
+  static const String acInstallation =
+      "assets/images/content/ac_installation.png";
 }

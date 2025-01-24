@@ -35,7 +35,7 @@ class AuthenticationRepository extends GetxController {
   }
 
   //Function to show Relevant Screen
-  screenRedirect() async {
+  Future<void> screenRedirect() async {
     User? user = _auth.currentUser;
     if (user != null) {
       if (user.emailVerified) {
@@ -61,33 +61,27 @@ class AuthenticationRepository extends GetxController {
           if (isProfileComplete) {
             if (role == 'client') {
               print('Navigating to: ClientHomePage');
-              Get.offAll(() => const ClientHomePage());
-              return;
+              return Get.offAll(() => const ClientHomePage());
             } else if (role == 'worker') {
-              print('Navigating to: ClientHomePage');
-              Get.offAll(() => const WorkerHomePage());
-              return;
+              print('Navigating to: WorkerHomePage');
+              return Get.offAll(() => const WorkerHomePage());
             }
           } else {
-            Get.offAll(() => const WorkerForm());
-            return;
+            return Get.offAll(() => const WorkerForm());
           }
         } else {
-          Get.offAll(() => const RoleSelectionPage());
-          return;
+          return Get.offAll(() => const RoleSelectionPage());
         }
       } else {
-        Get.offAll(() => VerifyEmailScreen(email: user.email));
-        return;
+        return Get.offAll(() => VerifyEmailScreen(email: user.email));
       }
     } else {
       deviceStorage.writeIfNull('IsFirstTime', true);
       if (deviceStorage.read('IsFirstTime') != true) {
-        Get.offAll(() => const Home());
+        return Get.offAll(() => const Home());
       } else {
-        Get.offAll(const OnBoardingScreen());
+        return Get.offAll(() => const OnBoardingScreen());
       }
-      return;
     }
   }
 

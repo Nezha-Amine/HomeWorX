@@ -7,7 +7,8 @@ class UserModel {
   String? address;
   String? profilePictureUrl;
   String? role; // Added role field
-  List<HandymanService>? services; // Selected handyman services
+  // List<HandymanService>? services; // Commented out for now
+  List<String>? services; // Placeholder for services as strings
 
   UserModel({
     required this.id,
@@ -30,7 +31,7 @@ class UserModel {
         "address": address,
         "profilePictureUrl": profilePictureUrl,
         "role": role, // Include role in serialization
-        "services": services?.map((service) => service.toJson()).toList(),
+        "services": services, // Serialize aservices field
       };
 
   factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
@@ -42,9 +43,8 @@ class UserModel {
         address: json["address"],
         profilePictureUrl: json["profilePictureUrl"],
         role: json["role"], // Deserialize role
-        services: (json["services"] as List<dynamic>?)
-            ?.map((service) => HandymanService.fromJson(service))
-            .toList(),
+        services:
+            List<String>.from(json["services"] ?? []), // Deserialize aservices
       );
 }
 

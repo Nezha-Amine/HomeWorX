@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:home_service_app/data/repositories/authentication/authentication_repository.dart';
+import 'package:home_service_app/data/repositories/user/user_repository.dart';
+import 'package:home_service_app/features/authentication/models/user_model.dart';
 import 'package:home_service_app/features/authentication/screens/chat_page.dart';
 import 'package:home_service_app/features/authentication/screens/client_home_page_2.dart';
 import 'package:home_service_app/features/authentication/screens/login/login.dart';
+import 'package:home_service_app/utils/constants/image_strings.dart';
 // Import the chat page
 
 class ClientHomePage extends StatefulWidget {
@@ -14,6 +17,31 @@ class ClientHomePage extends StatefulWidget {
 
 class _ClientHomePageState extends State<ClientHomePage> {
   int _selectedIndex = 0;
+  UserModel? _authenticatedUser;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAuthenticatedUser();
+  }
+
+  Future<void> _fetchAuthenticatedUser() async {
+    try {
+      final user = await UserRepository.instance.getAuthenticatedUserData();
+      setState(() {
+        _authenticatedUser = user;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to fetch user data: $e')),
+      );
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -56,27 +84,34 @@ class _ClientHomePageState extends State<ClientHomePage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF153A77),
         elevation: 0,
-        title: Row(
-          children: [
-            const CircleAvatar(
-              backgroundImage: AssetImage('assets/images/profile.jpg'),
-            ),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'Hi ! Adriel Effertz',
-                  style: TextStyle(fontSize: 16, color: Colors.white),
-                ),
-                Text(
-                  'Casablanca, Morocco',
-                  style: TextStyle(fontSize: 14, color: Colors.white70),
-                ),
-              ],
-            ),
-          ],
-        ),
+        title: _isLoading
+            ? const CircularProgressIndicator(color: Colors.white)
+            : Row(
+                children: [
+                  CircleAvatar(
+                    backgroundImage: _authenticatedUser?.profilePictureUrl !=
+                            null
+                        ? NetworkImage(_authenticatedUser!.profilePictureUrl!)
+                        : const AssetImage(HImages.user) as ImageProvider,
+                  ),
+                  const SizedBox(width: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Hi! ${_authenticatedUser?.firstName ?? 'Guest'} ${_authenticatedUser?.lastName ?? ''}",
+                        style:
+                            const TextStyle(fontSize: 16, color: Colors.white),
+                      ),
+                      Text(
+                        _authenticatedUser?.address ?? 'Unknown Location',
+                        style: const TextStyle(
+                            fontSize: 14, color: Colors.white70),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
         actions: [
           IconButton(
             onPressed: () {},
@@ -89,7 +124,7 @@ class _ClientHomePageState extends State<ClientHomePage> {
             color: Colors.white,
           ),
           IconButton(
-            onPressed: _logout, // Logout button
+            onPressed: _logout,
             icon: const Icon(Icons.exit_to_app),
             color: Colors.white,
           ),

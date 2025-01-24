@@ -255,14 +255,14 @@ class _ProfileFormPageState extends State<ClientProfile> {
           lastName: _lastNameController.text,
           phoneNumber: "+212 ${_phoneController.text}",
           address: _addressController.text,
-          role: "client", // Set role as client
+          role: "client",
           profilePictureUrl: _profileImageUrl,
         );
 
         // Save the user data to Firestore
         await UserRepository.instance.saveUserRecord(user);
 
-        // Navigate to ClientHomePage using Get.off()
+        // Navigate to ClientHomePage
         Get.off(() => const ClientHomePage());
       } catch (e) {
         // Handle errors
